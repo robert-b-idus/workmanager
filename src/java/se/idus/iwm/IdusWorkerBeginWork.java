@@ -1,5 +1,5 @@
 package se.idus.iwm;
 
 public interface IdusWorkerBeginWork {
-    boolean beginWork();
+    boolean beginWork(String ATag);
 }

@@ -21,6 +21,8 @@ class IdusWorkManagerBridge {
     public IdusWorkerStopWork OnStopWork;
     @Nullable
     public IdusWorkerScheduleWork OnScheduleWork;
+    @Nullable
+    public IdusWorkerCancelWork OnCancelWork;
 
     private static IdusWorkManagerBridge FInstance = null;
   
@@ -53,11 +55,24 @@ class IdusWorkManagerBridge {
         OnScheduleWork = AOnScheduleWork;
     }
 
-    public void scheduleWork() {
+    public void setOnCancelWork(IdusWorkerCancelWork AOnCancelWork){
+        Log.i(TAG, "setOnCancelWork");
+        OnCancelWork = AOnCancelWork;
+    }
+
+    public void scheduleWork(String ATag, String ANetworkType, int AMinutes) {
         if (OnScheduleWork != null) {
-            OnScheduleWork.scheduleWork();
+            OnScheduleWork.scheduleWork(ATag, ANetworkType, AMinutes);
         } else {
-            Log.i(TAG, "unbound - schedulework");
+            Log.i(TAG, "unbound - scheduleWork");
+        }
+    }
+
+    public void cancelWork(String ATag){
+        if (OnCancelWork != null) {
+            OnCancelWork.cancelWork(ATag);
+        } else {
+            Log.i(TAG, "unbound - cancelWork");
         }
     }
 

@@ -24,7 +24,7 @@ type
   [JavaSignature('se/idus/iwm/IdusWorkerBeginWork')]
   JIdusWorkerBeginWork = interface(IJavaInstance)
     ['{DA5EC5DE-0FEC-42BF-9703-668A97680498}']
-    function beginWork: Boolean; cdecl;
+    function beginWork(ATag : JString ): Boolean; cdecl;
   end;
 
   TJIdusWorkerBeginWork = class(TJavaGenericImport<JIdusWorkerBeginWorkClass, JIdusWorkerBeginWork>) end;
@@ -36,7 +36,7 @@ type
   [JavaSignature('se/idus/iwm/IdusWorkerStopWork')]
   JIdusWorkerStopWork = interface(IJavaInstance)
     ['{3A9C569F-6945-4946-AD5B-0224AF2B1822}']
-    procedure stopWork; cdecl;
+    procedure stopWork(ATag : JString); cdecl;
   end;
 
   TJIdusWorkerStopWork = class(TJavaGenericImport<JIdusWorkerBeginWorkClass, JIdusWorkerStopWork>) end;
@@ -49,40 +49,44 @@ type
   [JavaSignature('se/idus/iwm/IdusWorkManagerBridge')]
   JIdusWorkManagerBridge = interface(IJavaInstance)
     ['{9AB3AE36-6A34-427C-A349-4F1D2C7C540E}']
-    procedure scheduleWork(); cdecl;
+    procedure cancelWork(ATag : JString); cdecl;
+    procedure scheduleWork(ATag : JString; ANetworkType : JString; AMinutes : Int32); cdecl;
     procedure setOnBeginWork(AOnBeginWork : JIdusWorkerBeginWork ); cdecl;
     procedure setOnStopWork(AOnStopWork : JIdusWorkerStopWork ); cdecl;
   end;
   TJIdusWorkManagerBridge = class(TJavaGenericImport<JIdusWorkManagerBridgeClass, JIdusWorkManagerBridge>) end;
 
   type
-    TBeginWorkFunc = function : Boolean of object;
-    TStopWorkProc = procedure of object;
+    TBeginWorkFunc = function ( const ATag : String) : Boolean of object;
+    TStopWorkProc = procedure ( const ATag : String) of object;
     TIdusStartWork = class(TJavaLocal, JIdusWorkerBeginWork)
     private
       FOnBeginWork : TBeginWorkFunc;
     public
-      function beginWork: Boolean; cdecl;
+      function beginWork(ATag : JString): Boolean; cdecl;
       property OnBeginWork : TBeginWorkFunc read FOnBeginWork write FOnBeginWork;
     end;
     TIdusStopWork = class(TJavaLocal, JIdusWorkerStopWork)
     private
       FStopWorkProc : TStopWorkProc;
     public
-      procedure stopWork; cdecl;
+      procedure stopWork( ATag : JString ); cdecl;
       property OnStopWork : TStopWorkProc read FStopWorkProc write FStopWorkProc;
     end;
 
 implementation
 
-  function TIdusStartWork.beginWork;
+uses
+  AndroidApi.Helpers;
+
+  function TIdusStartWork.beginWork( ATag : JString ) : Boolean;
   begin
-    result := OnBeginWork()
+    result := OnBeginWork( JStringToString(ATag) )
   end;
 
-  procedure TIdusStopWork.stopWork;
+  procedure TIdusStopWork.stopWork( ATag : JString );
   begin
-    OnStopWork();
+    OnStopWork( JStringToString(ATag) );
   end;
 
 procedure RegisterTypes;

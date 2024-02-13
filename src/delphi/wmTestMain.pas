@@ -41,11 +41,12 @@ type
   protected
     procedure Log(const AMsg : String );
     procedure ScheduleWork;
+    procedure CancelWork(const ATag : String);
     function AppEvent(AAppEvent: TApplicationEvent; AContext: TObject): Boolean;
   public
     { Public declarations }
-    function OnStartWork : Boolean;
-    procedure OnStopWork;
+    function OnStartWork(const ATag : String ) : Boolean;
+    procedure OnStopWork(const ATag : String );
   end;
 
 var
@@ -53,9 +54,14 @@ var
 
 implementation
 
+
+uses
+  AndroidApi.Helpers;
+
 var
   gMainThreadId : TThreadId;
   FAppState : TApplicationEvent;
+
 
 {$R *.fmx}
 
@@ -65,7 +71,10 @@ begin
   FAppState := AAppEvent;
   case AAppEvent of
     TApplicationEvent.FinishedLaunching: Log('Finished launching');
-    TApplicationEvent.BecameActive: Log('Became active');
+    TApplicationEvent.BecameActive: begin
+       CancelWork('background_sync');
+       Log('Became active');
+    end;
     TApplicationEvent.WillBecomeInactive: begin
       Log('Will become inactive - scheduling work');
       ScheduleWork;
@@ -77,6 +86,16 @@ begin
     TApplicationEvent.TimeChange: Log('Time change');
     TApplicationEvent.OpenURL: Log('OpenURL');
   end;
+end;
+
+procedure TForm3.CancelWork(const ATag: String);
+var
+  LJNI : JIdusWorkManagerBridge;
+begin
+  Log('Cancelling work for tag ' + ATag );
+  LJNI := TJIdusWorkManagerBridge.JavaClass.getInstance();
+  LJNI.cancelWork( StringToJString(ATag) );
+  LJNI := nil;
 end;
 
 procedure TForm3.FormCreate(Sender: TObject);
@@ -116,12 +135,12 @@ begin
   );
 end;
 
-function TForm3.OnStartWork: Boolean;
+function TForm3.OnStartWork(const ATag : String ): Boolean;
 var
   wr : TWaitResult;
   I : Integer;
 begin
-  Log('OnStartWork called');
+  Log(Format('OnStartWork called for job "%s"', [ATag] ));
   if TThread.CurrentThread.ThreadID = gMainThreadID then
   begin
     Log('Called in main thread, aborting');
@@ -154,8 +173,9 @@ begin
   result := FTaskThread.Result;
 end;
 
-procedure TForm3.OnStopWork;
+procedure TForm3.OnStopWork(const ATag : string );
 begin
+  Log(Format('OnStopWork called for job "%s"', [ATag] ));
   if Assigned(FTaskThread) then
     FTaskThread.StopWork := true;
 end;
@@ -165,7 +185,7 @@ var
   LJNI : JIdusWorkManagerBridge;
 begin
   LJNI := TJIdusWorkManagerBridge.JavaClass.getInstance();
-  LJNI.scheduleWork;
+  LJNI.scheduleWork( StringToJstring('background_sync') , StringtoJString('connected'), 15 );
   LJNI := nil;
 end;
 

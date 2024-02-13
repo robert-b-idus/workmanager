@@ -1,5 +1,5 @@
 package se.idus.iwm;
 
 public interface IdusWorkerStopWork {
-    void stopWork();
+    void stopWork(String ATag);
 }

@@ -23,6 +23,7 @@ import java.util.concurrent.Executors;
 
 
 import java.util.Objects;
+import java.util.Iterator;
 
 import se.idus.iwm.IdusWorkManagerBridge;
 import se.idus.iwm.IdusWorkerScheduleWork;
@@ -64,12 +65,13 @@ public class IdusWorkManagerProvider extends ContentProvider {
 
         Objects.requireNonNull(context, "context");
 
-
+        //Anonymous beginWork calls the registered beginWork proc 
+        //that has been registered from delphi in the bridge-class
         workerFactory.setOnBeginWork(new IdusWorkerBeginWork() {
             @Override
-            public boolean beginWork() {
+            public boolean beginWork(String ATag) {
                 if (IdusWorkManagerBridge.getInstance().OnBeginWork != null ){
-                    return IdusWorkManagerBridge.getInstance().OnBeginWork.beginWork();
+                    return IdusWorkManagerBridge.getInstance().OnBeginWork.beginWork(ATag);
                 } else {
                     Log.i(TAG, "unbound - beginWork() called");
                     return false;
@@ -79,9 +81,9 @@ public class IdusWorkManagerProvider extends ContentProvider {
 
         workerFactory.setOnStopWork(new IdusWorkerStopWork() {
             @Override
-            public void stopWork() {
+            public void stopWork(String ATag) {
                 if (IdusWorkManagerBridge.getInstance().OnStopWork != null) {
-                    IdusWorkManagerBridge.getInstance().OnStopWork.stopWork();
+                    IdusWorkManagerBridge.getInstance().OnStopWork.stopWork(ATag);
                 } else {
                     Log.i(TAG, "unbound - stopWork() called");
                     return;
@@ -90,29 +92,73 @@ public class IdusWorkManagerProvider extends ContentProvider {
         });
 		
 		WorkManager.initialize( getContext(), getWorkManagerConfiguration() );
+
+        //Anonymous implementation to schedule work from bridge.
 		IdusWorkManagerBridge.getInstance().setOnScheduleWork(
            new IdusWorkerScheduleWork() {
              @Override
-             public void scheduleWork() {
-                scheduleAWork();
+             public void scheduleWork(String ATag, String ANetworkType, int AMinutes) {
+                scheduleAWork(ATag, ANetworkType, AMinutes);
              }
            }
         );
+        
+        //Anonymous implementation to call cancelWorkByTag from bridge.
+        IdusWorkManagerBridge.getInstance().setOnCancelWork(
+            new IdusWorkerCancelWork() {
+                @Override
+                public void cancelWork(String ATag){
+                    cancelWorkByTag(ATag);
+                }
+            }
+        );
 
 
-        return false;
+        return true;
     }
 
-    private void scheduleAWork() {
-		Log.i(TAG, "cancel all work");
-		WorkManager.getInstance(getContext()).cancelAllWorkByTag("periodic_work");
-		
-		Log.i(TAG, "scheduleWork");		
+    private void cancelWorkByTag(String ATag) {
+        Log.i(TAG, "cancel scheduled jobs for tag:" + ATag);
+        WorkManager.getInstance(getContext()).cancelAllWorkByTag(ATag);
+    }
+
+    private NetworkType stringToNetworkType(String ANetworkType) {
+        NetworkType nt;
+        switch(ANetworkType){
+            case "connected":
+                nt = NetworkType.CONNECTED;
+                break;
+            case "metered":
+                nt = NetworkType.METERED;
+                break;
+            case "not_required":
+                nt = NetworkType.NOT_REQUIRED;
+                break;
+            case "not_roaming":
+                nt = NetworkType.NOT_ROAMING;
+                break;
+            case "temporarily_unmetered":
+                nt = NetworkType.TEMPORARILY_UNMETERED;
+                break;
+            case "unmetered":
+                nt = NetworkType.UNMETERED;
+                break;
+            default:
+                nt = NetworkType.CONNECTED;
+                break;
+        }
+        return nt;
+    }
+
+    private void scheduleAWork(String ATag, String ANetworkType, int AMinutes) {
+        cancelWorkByTag(ATag);
+        NetworkType nt = stringToNetworkType(ANetworkType);
+
+		Log.i(TAG, "scheduleWork - " + ATag );		
         Constraints constr = new Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED).build();
-		Log.i(TAG, "got constraints");
-        PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(IdusPeriodicWorker.class, 15, TimeUnit.MINUTES)
-                .addTag("periodic_work")
+                .setRequiredNetworkType(nt).build();
+        PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(IdusPeriodicWorker.class, AMinutes, TimeUnit.MINUTES)
+                .addTag(ATag)
                 .setConstraints(constr)
                 .build();
 		Log.i(TAG, "got work request");				
@@ -122,9 +168,9 @@ public class IdusWorkManagerProvider extends ContentProvider {
 
     private static void checkContentProviderAuthority(@NonNull ProviderInfo info) {
         Objects.requireNonNull(info, "WorkManagerInitProvider ProviderInfo cannot be null.");
-        Log.i(TAG, "Auth: " + info.authority );
+        Log.i(TAG, "checkContentProviderAuthority Auth: " + info.authority );
         if ("se.idus.iwm.workmanagerinitprovider".equals(info.authority)) {
-            throw new IllegalStateException("Incorrect provider authority in manifest. Most likely due to a missing applicationId variable in application's build.gradle.");
+            throw new IllegalStateException("Incorrect provider authority in manifest. ");
         }
     }
 

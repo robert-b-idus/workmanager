@@ -19,12 +19,13 @@
     "$(BDS)\\lib\\android\\debug\\tracing-1.0.0.jar",
     "$(BDS)\\lib\\android\\debug\\versionedparcelable-1.1.1.jar",
     "$(BDS)\\lib\\android\\debug\\work-runtime-2.7.0.jar",
-    "$(BDS)\\lib\\android\\debug\\listenablefuture-1.0.jar"
+    "$(BDS)\\lib\\android\\debug\\listenablefuture-1.0.jar",
+    "$(BDS)\\lib\\android\\debug\\kotlin-stdlib-1.8.22.jar"
   ],
   "javaFiles":[
-    "..\\..\\..\\Projects\\fmx\\java\\fmx\\src\\se\\*.java"
+    "..\\src\\java\\se\\idus\\iwm\\*.java"
   ],
-  "outputFile":"..\\..\\..\\Projects\\bgtasks-android\\jar\\idusworkmanager-baselibs.jar",
+  "outputFile":"..\\lib\\idusworkmanager-baselibs.jar",
   "sourceVersion":"1.10",
   "targetVersion":"1.10"
 }

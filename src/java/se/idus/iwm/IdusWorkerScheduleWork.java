@@ -1,5 +1,5 @@
 package se.idus.iwm;
 
 public interface IdusWorkerScheduleWork {
-    void scheduleWork();
+    void scheduleWork(String ATag, String ANetworkType, int AMinutes);
 }
