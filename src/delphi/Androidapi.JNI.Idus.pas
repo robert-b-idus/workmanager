@@ -13,21 +13,7 @@ interface
 
 uses
   Androidapi.JNIBridge,
-  Androidapi.JNI.AdMob,
-  Androidapi.JNI.App,
-  Androidapi.JNI.Bluetooth,
-  Androidapi.JNI.GraphicsContentViewText,
-  Androidapi.JNI.Hardware,
-  Androidapi.JNI.JavaTypes,
-  Androidapi.JNI.Location,
-  Androidapi.JNI.Net,
-  Androidapi.JNI.Os,
-  Androidapi.JNI.PlayServices.Maps,
-  Androidapi.JNI.RenderScript,
-  Androidapi.JNI.Telephony,
-  Androidapi.JNI.Util,
-  Androidapi.JNI.Webkit,
-  Androidapi.JNI.Widget;
+  Androidapi.JNI.JavaTypes;
 
 type
   JIdusWorkManagerBridge = interface;
