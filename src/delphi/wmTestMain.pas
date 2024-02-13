@@ -147,12 +147,6 @@ begin
       wrError: Log('Error');
       wrIOCompletion: Log('IOCompletion');
     end;
-    TThread.Synchronize(nil,
-      procedure
-      begin
-        Application.ProcessMessages;
-      end
-    );
   until wr = wrSignaled;
 
   Log('signalled: Work completed');
