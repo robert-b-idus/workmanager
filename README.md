@@ -86,5 +86,7 @@ The scheduled work is as of now a Periodicworker
 
 - OneTimeWorkRequest
 - Nicer delphi-side scheduler handling
+- Get rid of dependency of r.jar
+- Get rid of what I feel are unneccesary resources that have to be deployed.
 
 
