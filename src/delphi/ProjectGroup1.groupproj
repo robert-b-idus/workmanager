@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{B31E0D9B-2489-4754-B4CA-0C978C311A48}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="wmTest.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\..\..\EmptyProject\Project2.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="wmTest">
+        <MSBuild Projects="wmTest.dproj"/>
+    </Target>
+    <Target Name="wmTest:Clean">
+        <MSBuild Projects="wmTest.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="wmTest:Make">
+        <MSBuild Projects="wmTest.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Project2">
+        <MSBuild Projects="..\..\..\EmptyProject\Project2.dproj"/>
+    </Target>
+    <Target Name="Project2:Clean">
+        <MSBuild Projects="..\..\..\EmptyProject\Project2.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Project2:Make">
+        <MSBuild Projects="..\..\..\EmptyProject\Project2.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="wmTest;Project2"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="wmTest:Clean;Project2:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="wmTest:Make;Project2:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
