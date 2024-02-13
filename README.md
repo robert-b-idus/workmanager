@@ -17,9 +17,10 @@ res\values\values.xml
 ```
 ## Example project: wmTest
 
-registers onStartWork and onStopWork handlers on FormCreate.
+Registers onStartWork and onStopWork handlers on FormCreate. These are called from the system when a work is scheduled to run.
 
 OnStartWork is called from workmanager and starts a delphi-thread(1) and waits for it
+
 OnStopWork stops the delphi-thread(1) 
 
 Work is scheduled upon app backgrounding.
